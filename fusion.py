@@ -11,6 +11,8 @@ def content_fusion(x_tilde, content_img, weights=None):
 
     if not weights:
         weights = np.ones(total_px)
+    else:
+        weights = weights.flatten()
 
     weights += 1
     
