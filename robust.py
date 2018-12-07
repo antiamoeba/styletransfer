@@ -11,10 +11,10 @@ def robust_agg(nn, x, patch_size, centers):
     # calculate weights
     num_rows = x.shape[0]
     num_cols = x.shape[1]
-    total_px = num_rows * num_cols
+    total_px = num_rows * num_cols * 3
 
-    def get_index(y, x):
-        return y * num_cols + x
+    def get_index(y, x, k):
+        return (y * num_cols + x) * 3 + k
 
     x_tilde = x
 
@@ -33,20 +33,21 @@ def robust_agg(nn, x, patch_size, centers):
 
             for i in range(patch_size):
                 for j in range(patch_size):
-                    index = get_index(center[0] + i, center[1] + j)
-                    rows.append(curr)
-                    cols.append(index)
-                    vals.append(weight_rt)
-                    b.append(weight_rt * style_nh[i, j])
-                    curr += 1
+                    for k in range(3):
+                        index = get_index(center[0] + i, center[1] + j, k)
+                        rows.append(curr)
+                        cols.append(index)
+                        vals.append(weight_rt)
+                        b.append(weight_rt * style_nh[i, j, k])
+                        curr += 1
 
         
         b = np.array(b)
-        A = csr_matrix((vals, (rows, cols)), shape=(curr, total_px))
+        A = csr_matrix((vals, (rows, cols)), shape=(curr, total_px * 3))
 
         output = linalg.lsqr(A, b)
         output_data = output[0]
-        x_tilde = np.reshape(output_data, (num_rows, num_cols))
+        x_tilde = np.reshape(output_data, (num_rows, num_cols, 3))
 
     return x_tilde
 
