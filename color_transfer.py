@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+import skimage.io as skio
+import skimage as sk
 
 # TODO: Make more efficient so we don't have to compute
 # the histogram each time
@@ -19,14 +21,15 @@ def color_transfer(S, X):
     X_quantiles = X_quantiles / X_quantiles[-1]
     S_quantiles = np.cumsum(S_counts).astype(np.float64)
     S_quantiles = S_quantiles / S_quantiles[-1]
-    interp_S_values = np.interp(X_quantiles, S_quantiles, S_quantiles)
+    interp_S_values = np.interp(X_quantiles, S_quantiles, S_values)
     return interp_S_values[bin_idx].reshape(old_shape)
 
 
 if __name__ == "__main__":
-    img1 = cv2.imread("images/cow.jpg")
-    img2 = cv2.imread("images/mars.jpg")
+    img1 = sk.img_as_float(skio.imread("images/starry.jpg"))
+    img2 = sk.img_as_float(skio.imread("images/cow.jpg"))
 
     output_img1 = color_transfer(img1, img2)
-
-    cv2.imwrite("color_transfer_test.png", output_img1)
+    skio.imsave("color_transfer_test.jpg", output_img1)
+    skio.imshow(output_img1)
+    skio.show()
