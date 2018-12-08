@@ -5,7 +5,8 @@ import numpy as np
 """
 Input: Style image S, Guess Image X
 
-Output: Guess X, with transferred color
+Output: Guess X, with transferred color through histogram matching
+source: https://stackoverflow.com/questions/32655686/histogram-matching-of-two-images-in-python-2-x
 """
 def color_transfer(S, X):
     oldshape = X.shape
