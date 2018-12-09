@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 from scipy.sparse import csr_matrix
 from scipy.sparse import linalg
+import pdb
 
 R = 0.8 # for robust aggregation (avoid least squares)
 ITERATIONS = 3 #10 #IRLS iterations
@@ -9,7 +10,7 @@ ITERATIONS = 3 #10 #IRLS iterations
 
 def robust_agg(centers, patches, x, patch_size):
     # calculate weights
-    num_rows = x.shape[0]
+    num_rows = x.shape[0] 
     num_cols = x.shape[1]
     total_px = num_rows * num_cols * 3
 
@@ -47,7 +48,7 @@ def robust_agg(centers, patches, x, patch_size):
         output = linalg.lsqr(A, b)
         output_data = output[0]
         x_tilde = np.reshape(output_data, (num_rows, num_cols, 3))
-
+        # pdb.set_trace()
     return x_tilde
 
     

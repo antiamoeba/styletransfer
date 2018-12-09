@@ -6,6 +6,10 @@ import pdb
 
 class PatchMatcher:
 
+    # TODO: Make it so we don't actually have to save all the patches
+    """
+    S is the style image and patch_size is the length and width of the patch
+    """
     def __init__(self, S, patch_size):
         self.S = S
         self.patch_size = patch_size
@@ -17,8 +21,6 @@ class PatchMatcher:
     # determine how patches are close?
     """
     Creates [patch images] and NearestNeighbors object for all patches in S
-    uses auto for now, but it seems like BallTree is better
-    for higher dimensions
     """
     def construct_matcher(self):
         patches = image.extract_patches_2d(self.S, (self.patch_size, self.patch_size))
@@ -43,12 +45,11 @@ class PatchMatcher:
     # TODO: Vectorize
     # TODO: Add option to use other neighborhoods
     """
-    Input: Style image S, guess image X, patch size, subsampling gap
-    patch size should be >= subsampling gap
+    Input: Guess image X, subsampling gap
+    subsampling gap should be <= patch size
 
     Output: Corresponding patches for each sample from X to S
-    { (y, x) : patch image }, (y, x) is the upper left corner
-
+    [(y, x)] and [patch images], (y, x) is the upper left corner
     """
     def find_nearest_neighbors(self, X, sample_gap):
         neighb_ys, neighb_xs = self.get_neighborhoods(X, sample_gap)
@@ -60,7 +61,7 @@ class PatchMatcher:
         distances, indices = self.matcher.kneighbors(X_patches)
         matches = self.S_patches[indices].reshape(X_patches.shape[0], self.patch_size, self.patch_size, 3)
         neighborhoods = np.array([neighb_ys, neighb_xs]).T
-        return {(neighborhoods[i][0], neighborhoods[i][1]) : matches[i] for i in range(len(neighborhoods))}
+        return neighborhoods, matches
 
 if __name__ == "__main__":
     import skimage.io as skio
