@@ -7,7 +7,8 @@ R = 0.8 # for robust aggregation (avoid least squares)
 ITERATIONS = 10 #IRLS iterations
 
 
-def robust_agg(nn, x, patch_size, centers):
+def robust_agg(nn, x, patch_size):
+    centers = nn.keys()
     # calculate weights
     num_rows = x.shape[0]
     num_cols = x.shape[1]
@@ -41,7 +42,6 @@ def robust_agg(nn, x, patch_size, centers):
                         b.append(weight_rt * style_nh[i, j, k])
                         curr += 1
 
-        
         b = np.array(b)
         A = csr_matrix((vals, (rows, cols)), shape=(curr, total_px * 3))
 
