@@ -57,8 +57,8 @@ def style_transfer(style, content, weight=None):
         for patch_size, sample_gap in zip(PATCH_SIZES, SUB_SAMPLING_GAPS):
             patch_matcher = patch_matching.PatchMatcher(style_l, patch_size)
             for i in range(OPT_ITERATIONS):
-                nn = patch_matcher.find_nearest_neighbors(X, sample_gap)
-                X_tilde = robust.robust_agg(nn, X, patch_size)
+                neighborhoods, matches = patch_matcher.find_nearest_neighbors(X, sample_gap)
+                X_tilde = robust.robust_agg(neighborhoods, matches, X, patch_size)
                 X_hat = fusion.content_fusion(X_tilde, content_l, weight_l)
 
                 X_colored = color_transfer.color_transfer(style_l, X_hat)

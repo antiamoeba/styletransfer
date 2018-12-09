@@ -7,8 +7,7 @@ R = 0.8 # for robust aggregation (avoid least squares)
 ITERATIONS = 3 #10 #IRLS iterations
 
 
-def robust_agg(nn, x, patch_size):
-    centers = nn.keys()
+def robust_agg(centers, patches, x, patch_size):
     # calculate weights
     num_rows = x.shape[0]
     num_cols = x.shape[1]
@@ -25,9 +24,10 @@ def robust_agg(nn, x, patch_size):
         vals = []
         b = []
         curr = 0
-        for center in centers:
+        for i in range(len(centers)):
+            center = centers[i]
             x_nh = x_tilde[center[0]: center[0]+patch_size, center[1]: center[1]+patch_size]
-            style_nh = nn[center]
+            style_nh = patches[i]
             weight = np.linalg.norm(style_nh - x_nh) ** (R - 2)
             weight_rt = weight ** 0.5
 
