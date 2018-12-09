@@ -9,7 +9,7 @@ def content_fusion(x_tilde, content_img, weights=None):
 
     total_px = x_tilde.shape[0] * x_tilde.shape[1] * 3
 
-    if not weights:
+    if weights is None:
         weights = np.ones(total_px)
     else:
         weights = weights.flatten()

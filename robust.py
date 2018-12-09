@@ -4,7 +4,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse import linalg
 
 R = 0.8 # for robust aggregation (avoid least squares)
-ITERATIONS = 10 #IRLS iterations
+ITERATIONS = 3 #10 #IRLS iterations
 
 
 def robust_agg(nn, x, patch_size):
@@ -18,7 +18,6 @@ def robust_agg(nn, x, patch_size):
         return (y * num_cols + x) * 3 + k
 
     x_tilde = x
-
     for iteration in range(ITERATIONS):
         print("Iteration", iteration)
         rows = []
@@ -43,7 +42,7 @@ def robust_agg(nn, x, patch_size):
                         curr += 1
 
         b = np.array(b)
-        A = csr_matrix((vals, (rows, cols)), shape=(curr, total_px * 3))
+        A = csr_matrix((vals, (rows, cols)), shape=(curr, total_px))
 
         output = linalg.lsqr(A, b)
         output_data = output[0]

@@ -60,7 +60,7 @@ def style_transfer(style, content, weight=None):
                 X = denoise.denoise(X_colored)
 
         if l + 1 < PYR_SIZE:
-            X = cv2.resize(X, (style_pyr[l+1].shape[1], style_pyr[l+1].shape[0]))
+            X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
             # add noise for next layer, update this std dev
             X = X + np.random.normal(scale=30, size=X.shape) #updat std dev?
