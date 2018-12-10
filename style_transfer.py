@@ -27,7 +27,7 @@ Output: Content image transformed to have the style of the style image
 """
 def style_transfer(style, content, weight=None):
     if weight is None:
-        weight = np.ones(style.shape)
+        weight = np.ones(content.shape)
 
     # Transfer color to content image first  
     s_pyr = style.copy()
@@ -55,7 +55,7 @@ def style_transfer(style, content, weight=None):
     for l in range(0, PYR_SIZE):
         style_l = style_pyr[l]
         content_l = content_pyr[l]
-        weight_l = content_pyr[l]
+        weight_l = weight_pyr[l]
 
         for patch_size, sample_gap in zip(PATCH_SIZES, SUB_SAMPLING_GAPS):
             if patch_size > X.shape[0] or patch_size > X.shape[1] or patch_size > style_l.shape[0] or patch_size > style_l.shape[1]:
@@ -71,7 +71,6 @@ def style_transfer(style, content, weight=None):
                 cv2.imwrite("fusion.jpg", X_hat)
     
                 X_colored = color_transfer.color_transfer(style_l, X_hat)
-                pdb.set_trace()
                 X = denoise.denoise(X_colored)
     
         if l + 1 < PYR_SIZE:
