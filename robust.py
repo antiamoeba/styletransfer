@@ -20,7 +20,6 @@ def robust_agg(centers, patches, x, patch_size):
 
     x_tilde = x
     for iteration in range(ITERATIONS):
-        print("Iteration", iteration)
         rows = []
         cols = []
         vals = []

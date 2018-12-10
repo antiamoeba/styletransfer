@@ -10,14 +10,15 @@ import denoise
 import color_transfer
 import pdb
 
-# PYR_SIZE = 5
-# OPT_ITERATIONS = 10
-# PATCH_SIZES = [33, 21, 13, 9]
-# SUB_SAMPLING_GAPS = [28, 18, 8, 5]
 PYR_SIZE = 3
-OPT_ITERATIONS = 3
-PATCH_SIZES = [21, 13]
-SUB_SAMPLING_GAPS = [18, 8]
+OPT_ITERATIONS = 10
+PATCH_SIZES = [33, 21, 13, 9]
+SUB_SAMPLING_GAPS = [28, 18, 8, 5]
+
+# PYR_SIZE = 3
+# OPT_ITERATIONS = 3
+# PATCH_SIZES = [21, 13]
+# SUB_SAMPLING_GAPS = [18, 8]
 
 """
 Input: Style image (3-D), content image (3-D), optional
@@ -58,17 +59,12 @@ def style_transfer(style, content, weight=None):
         for patch_size, sample_gap in zip(PATCH_SIZES, SUB_SAMPLING_GAPS):
             patch_matcher = patch_matching.PatchMatcher(style_l, patch_size)
             for i in range(OPT_ITERATIONS):
-                print("matching")
+                print("pyramid level:", l, "patch size:", patch_size, "iteration", i)
                 neighborhoods, matches = patch_matcher.find_nearest_neighbors(X, sample_gap)
-                print("robust")
                 X_tilde = robust.robust_agg(neighborhoods, matches, X, patch_size)
-                print("fusion")
                 X_hat = fusion.content_fusion(X_tilde, content_l, weight_l)
-                print("color")
                 X_colored = color_transfer.color_transfer(style_l, X_hat)
-                print("denoise")
                 X = denoise.denoise(X_colored)
-                # pdb.set_trace()
         if l + 1 < PYR_SIZE:
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
@@ -77,10 +73,13 @@ def style_transfer(style, content, weight=None):
     return X
 
 if __name__ == "__main__":
+    import datetime
+    print("started", datetime.datetime.now())
     style = cv2.imread("images/starry_tiny.jpg")
     content = cv2.imread("images/cat_small.jpg")
     X = style_transfer(style, content)
-    cv2.imwrite("style_transfer_output3.png", X)
+    cv2.imwrite("style_transfer_output_full_boy.png", X)
+    print("ended", datetime.datetime.now())
 
 
 

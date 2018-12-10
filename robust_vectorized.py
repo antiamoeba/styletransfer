@@ -20,7 +20,6 @@ def robust_agg(centers, patches, x, patch_size):
     patch_num = np.arange(patches.shape[0])
     x_tilde = x
     for iteration in range(ITERATIONS):
-        print("Iteration", iteration)
         x_nh = x_tilde[centers[0][:, None] + yw, centers[1][:, None]]
         weight = np.linalg.norm(patches.reshape(x_nh.shape)-x_nh, axis=(1,2)) ** (R - 2)
         weight_rt = weight ** 0.5
