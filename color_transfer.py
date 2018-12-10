@@ -32,8 +32,8 @@ def color_transfer(S3, X3):
 
 
 if __name__ == "__main__":
-    img1 = sk.img_as_float(skio.imread("images/sunday_afternoon.png"))
-    img2 = sk.img_as_float(skio.imread("images/cow.jpg"))
+    img1 = sk.img_as_float(skio.imread("images/starry_med.jpg"))
+    img2 = sk.img_as_float(skio.imread("images/cat_med.jpg"))
 
     output_img1 = color_transfer(img1, img2)
     skio.imsave("color_transfer_test.jpg", output_img1)

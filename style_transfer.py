@@ -3,7 +3,7 @@ import cv2
 import skimage.io as skio
 import skimage as sk
 
-import robust_vectorized as robust
+import robust as robust
 import fusion
 import patch_matching
 import denoise
@@ -31,7 +31,8 @@ def style_transfer(style, content, weight=None):
 
     # Transfer color to content image first  
     s_pyr = style.copy()
-    c_pyr = color_transfer.color_transfer(s_pyr, content.copy())
+    c_pyr = content.copy()
+    c_pyr = color_transfer.color_transfer(s_pyr, c_pyr)
     w_pyr = weight.copy()
 
     style_pyr = [s_pyr]
@@ -50,7 +51,6 @@ def style_transfer(style, content, weight=None):
     content_pyr, style_pyr, weight_pyr = content_pyr[::-1], style_pyr[::-1], weight_pyr[::-1]
 
     X = content_pyr[0] + np.random.normal(scale=50, size=content_pyr[0].shape)
-
     # Loop over every size
     for l in range(0, PYR_SIZE):
         style_l = style_pyr[l]
@@ -64,10 +64,16 @@ def style_transfer(style, content, weight=None):
             for i in range(OPT_ITERATIONS):
                 print("pyramid level:", l, "patch size:", patch_size, "iteration", i)
                 neighborhoods, matches = patch_matcher.find_nearest_neighbors(X, sample_gap)
+                cv2.imwrite("matches.jpg", np.vstack(matches[:10]))
                 X_tilde = robust.robust_agg(neighborhoods, matches, X, patch_size)
+                cv2.imwrite("robust.jpg", X_tilde)
                 X_hat = fusion.content_fusion(X_tilde, content_l, weight_l)
+                cv2.imwrite("fusion.jpg", X_hat)
+    
                 X_colored = color_transfer.color_transfer(style_l, X_hat)
+                pdb.set_trace()
                 X = denoise.denoise(X_colored)
+    
         if l + 1 < PYR_SIZE:
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
@@ -78,8 +84,8 @@ def style_transfer(style, content, weight=None):
 if __name__ == "__main__":
     import datetime
     print("started", datetime.datetime.now())
-    style = cv2.imread("images/starry_tiny.jpg")
-    content = cv2.imread("images/cat_small.jpg")
+    style = cv2.imread("images/starry_med.jpg")
+    content = cv2.imread("images/cat_med.jpg")
     X = style_transfer(style, content)
     cv2.imwrite("style_transfer_output_full_boy.png", X)
     print("ended", datetime.datetime.now())

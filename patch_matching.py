@@ -66,8 +66,9 @@ class PatchMatcher:
 if __name__ == "__main__":
     import skimage.io as skio
     img = skio.imread("images/starry_tiny.jpg")
-    matcher = PatchMatcher(img, 60)
-    coords, images = matcher.find_nearest_neighbors(img, 50)
+    img2 = skio.imread("images/cat_small.jpg")
+    matcher = PatchMatcher(img, 30)
+    coords, images = matcher.find_nearest_neighbors(img2, 27)
     for i in range(3):
         skio.imshow(images[i])
         skio.show()
