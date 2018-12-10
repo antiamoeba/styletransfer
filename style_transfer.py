@@ -11,7 +11,7 @@ import color_transfer
 import pdb
 
 PYR_SIZE = 3
-OPT_ITERATIONS = 10
+OPT_ITERATIONS = 3
 PATCH_SIZES = [33, 21, 13, 9]
 SUB_SAMPLING_GAPS = [28, 18, 8, 5]
 
@@ -26,11 +26,12 @@ weight image (2-D, same size as content image).
 Output: Content image transformed to have the style of the style image
 """
 def style_transfer(style, content, weight=None):
-    if not weight:
+    if weight is None:
         weight = np.ones(style.shape)
 
+    # Transfer color to content image first  
     s_pyr = style.copy()
-    c_pyr = content.copy()
+    c_pyr = color_transfer.color_transfer(s_pyr, content.copy())
     w_pyr = weight.copy()
 
     style_pyr = [s_pyr]
@@ -57,6 +58,8 @@ def style_transfer(style, content, weight=None):
         weight_l = content_pyr[l]
 
         for patch_size, sample_gap in zip(PATCH_SIZES, SUB_SAMPLING_GAPS):
+            if patch_size > X.shape[0] or patch_size > X.shape[1] or patch_size > style_l.shape[0] or patch_size > style_l.shape[1]:
+                continue
             patch_matcher = patch_matching.PatchMatcher(style_l, patch_size)
             for i in range(OPT_ITERATIONS):
                 print("pyramid level:", l, "patch size:", patch_size, "iteration", i)

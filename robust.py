@@ -5,7 +5,7 @@ from scipy.sparse import linalg
 import pdb
 
 R = 0.8 # for robust aggregation (avoid least squares)
-ITERATIONS = 3 #10 #IRLS iterations
+ITERATIONS = 10 #IRLS iterations
 
 
 def robust_agg(centers, patches, x, patch_size):
