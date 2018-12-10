@@ -6,7 +6,7 @@ import pdb
 
 R = 0.8 # for robust aggregation (avoid least squares)
 ITERATIONS = 10 #IRLS iterations
-
+# TODO: Fix, right now the patches come out transposed
 def robust_agg(centers, patches, x, patch_size):
     # calculate weights
     num_rows = x.shape[0] 
@@ -20,7 +20,7 @@ def robust_agg(centers, patches, x, patch_size):
     patch_num = np.arange(patches.shape[0])
     x_tilde = x
     for iteration in range(ITERATIONS):
-        x_nh = x_tilde[centers[0][:, None] + yw, centers[1][:, None]]
+        x_nh = x_tilde[centers[0][:, None] + yw, centers[1][:, None] + xw]
         weight = np.linalg.norm(patches.reshape(x_nh.shape)-x_nh, axis=(1,2)) ** (R - 2)
         weight_rt = weight ** 0.5
         index = ((centers[0][:, None] + yw3) * num_cols + (centers[1][:, None] + xw3)) * 3 + cw3

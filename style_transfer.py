@@ -71,7 +71,6 @@ def style_transfer(style, content, weight=None):
                 cv2.imwrite("fusion.jpg", X_hat)
     
                 X_colored = color_transfer.color_transfer(style_l, X_hat)
-                pdb.set_trace()
                 X = denoise.denoise(X_colored)
     
         if l + 1 < PYR_SIZE:
