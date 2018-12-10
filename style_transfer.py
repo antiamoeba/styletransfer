@@ -46,7 +46,7 @@ def style_transfer(style, content, weight=None):
 
     content_pyr, style_pyr, weight_pyr = content_pyr[::-1], style_pyr[::-1], weight_pyr[::-1]
 
-    X = content_pyr[0] + np.random.normal(scale=.2, size=content_pyr[0].shape)
+    X = content_pyr[0] + np.random.normal(scale=50, size=content_pyr[0].shape)
 
     # Loop over every size
     for l in range(0, PYR_SIZE):
@@ -72,12 +72,12 @@ def style_transfer(style, content, weight=None):
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
             # add noise for next layer, update this std dev
-            X = X + np.random.normal(scale=.1, size=X.shape) #updat std dev?
+            X = X + np.random.normal(scale=30, size=X.shape) #updat std dev?
     return X
 
 if __name__ == "__main__":
-    style = sk.img_as_float(cv2.imread("images/starry_tiny.jpg"))
-    content = sk.img_as_float(cv2.imread("images/cat_small.jpg"))
+    style = cv2.imread("images/starry_tiny.jpg")
+    content = cv2.imread("images/cat_small.jpg")
     X = style_transfer(style, content)
     cv2.imwrite("style_transfer_output2.png", X)
 
