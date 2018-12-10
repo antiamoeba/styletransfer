@@ -9,6 +9,7 @@ ITERATIONS = 3 #10 #IRLS iterations
 
 
 def robust_agg(centers, patches, x, patch_size):
+    centers = centers.T
     # calculate weights
     num_rows = x.shape[0] 
     num_cols = x.shape[1]
@@ -48,7 +49,12 @@ def robust_agg(centers, patches, x, patch_size):
         output = linalg.lsqr(A, b)
         output_data = output[0]
         x_tilde = np.reshape(output_data, (num_rows, num_cols, 3))
-        # pdb.set_trace()
     return x_tilde
-
     
+if __name__ == "__main__":
+    img = np.random.rand(20, 30, 3)
+    centers = np.array([[0, 0, 0, 10, 10, 10],
+               [0, 10, 20, 0, 10, 20]])
+    patches = np.array([np.random.rand(10, 10, 3) for _ in range(centers.shape[1])])
+    patch_size = 10
+    agg = robust_agg(centers, patches, img, patch_size)

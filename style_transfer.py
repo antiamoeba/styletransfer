@@ -3,11 +3,12 @@ import cv2
 import skimage.io as skio
 import skimage as sk
 
-import robust
+import robust_vectorized as robust
 import fusion
 import patch_matching
 import denoise
 import color_transfer
+import pdb
 
 # PYR_SIZE = 5
 # OPT_ITERATIONS = 10
@@ -67,7 +68,7 @@ def style_transfer(style, content, weight=None):
                 X_colored = color_transfer.color_transfer(style_l, X_hat)
                 print("denoise")
                 X = denoise.denoise(X_colored)
-
+                # pdb.set_trace()
         if l + 1 < PYR_SIZE:
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
@@ -79,7 +80,7 @@ if __name__ == "__main__":
     style = cv2.imread("images/starry_tiny.jpg")
     content = cv2.imread("images/cat_small.jpg")
     X = style_transfer(style, content)
-    cv2.imwrite("style_transfer_output2.png", X)
+    cv2.imwrite("style_transfer_output3.png", X)
 
 
 
