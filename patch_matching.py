@@ -14,6 +14,9 @@ class PatchMatcher:
         self.S = S
         self.patch_size = patch_size
         self.S_patches = []
+        self.yw, self.xw = np.meshgrid(np.arange(self.patch_size), np.arange(self.patch_size))
+        self.yw = self.yw.flatten()
+        self.xw = self.xw.flatten()
         self.matcher = None 
         self.construct_matcher()
 
@@ -53,10 +56,7 @@ class PatchMatcher:
     """
     def find_nearest_neighbors(self, X, sample_gap):
         neighb_ys, neighb_xs = self.get_neighborhoods(X, sample_gap)
-        X_patches = []
-        for i in range(len(neighb_ys)):
-            y, x = neighb_ys[i], neighb_xs[i]
-            X_patches.append(X[y:y+self.patch_size, x:x+self.patch_size])
+        X_patches = X[np.asarray(neighb_ys)[:,None] + self.yw, np.asarray(neighb_xs)[:,None] + self.xw, :]
         X_patches = np.array(X_patches).reshape(len(X_patches), -1)
         distances, indices = self.matcher.kneighbors(X_patches)
         matches = self.S_patches[indices].reshape(X_patches.shape[0], self.patch_size, self.patch_size, 3)
@@ -67,8 +67,7 @@ if __name__ == "__main__":
     import skimage.io as skio
     img = skio.imread("images/starry_tiny.jpg")
     matcher = PatchMatcher(img, 60)
-    ret = matcher.find_nearest_neighbors(img, 50)
-    results = list(ret.values())  
+    coords, images = matcher.find_nearest_neighbors(img, 50)
     for i in range(3):
-        skio.imshow(results[i])
+        skio.imshow(images[i])
         skio.show()
