@@ -77,5 +77,5 @@ if __name__ == "__main__":
     img2 = cv2.imread("images/starry_tiny.jpg")
     matcher = PatchMatcher(img, 60)
     coords, images = matcher.find_nearest_neighbors(img, 55)
-    test = robust.naive_agg(coords, images, img, 60)
+    test = robust.less_robust_agg(coords, images, img, 60)
     cv2.imwrite("patch_match_test.png", test)
