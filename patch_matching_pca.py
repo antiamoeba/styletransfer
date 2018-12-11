@@ -79,8 +79,8 @@ if __name__ == "__main__":
     import robust
     import cv2
     import datetime
-    img = cv2.imread("images/style/starry_tiny.jpg")
-    img2 = cv2.imread("images/style/starry_tiny.jpg")
+    img = cv2.imread("images/style/starry_small.jpg")
+    img2 = cv2.imread("images/content/cat_med.jpg")
     print("start", datetime.datetime.now())
     matcher = PatchMatcher(img, 33)
     print("done constructing", datetime.datetime.now())
