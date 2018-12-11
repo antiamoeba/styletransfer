@@ -10,7 +10,7 @@ import denoise
 import color_transfer
 import pdb
 
-PYR_SIZE = 2
+PYR_SIZE = 3
 OPT_ITERATIONS = 3
 PATCH_SIZES = [33, 21, 13, 9]
 SUB_SAMPLING_GAPS = [28, 18, 8, 5]
@@ -66,25 +66,22 @@ def style_transfer(style, content, weight=None):
             if patch_size > X.shape[0] or patch_size > X.shape[1] or patch_size > style_l.shape[0] or patch_size > style_l.shape[1]:
                 continue
             patch_matcher = patch_matching.PatchMatcher(style_l, patch_size)
-            cv2.imwrite("results/init" + str(l) + str(patch_size) + ".jpg", X)
+            cv2.imwrite("results/init_L%i_p%i.jpg" % (l, patch_size), X)
             for i in range(OPT_ITERATIONS):
-                print("pyramid level:", l, "patch size:", patch_size, "iteration", i)
+                print("pyramid level: %i, patch size: %i, iteration: %i" % (l, patch_size, i))
                 neighborhoods, matches = patch_matcher.find_nearest_neighbors(X + np.random.normal(scale=noise_dev/4, size=X.shape), sample_gap)
-                #cv2.imwrite("results/matches.jpg", np.vstack(matches[:10]))
-                X_tilde = robust.naive_agg(neighborhoods, matches, X, patch_size)
-                cv2.imwrite("results/robust" + str(l) + str(patch_size) + ".jpg", X_tilde)
+                X_tilde = robust.robust_agg(neighborhoods, matches, X, patch_size)
+                cv2.imwrite("results/robust_L%i_p%i_i%i.jpg" % (l, patch_size, i), X_tilde)
                 X_hat = fusion.content_fusion(X_tilde, content_l, weight_l)
-                cv2.imwrite("results/fusion" + str(l) + str(patch_size) + ".jpg", X_hat)
-    
-                X_colored = color_transfer.color_transfer(style_l, X_hat) # should be x_hat
-                X = X_colored #denoise.denoise(X_colored)
-                cv2.imwrite("results/output" + str(l) + str(patch_size) + ".jpg", X)
-    
+                cv2.imwrite("results/fusion_L%i_p%i_i%i.jpg" % (l, patch_size, i), X_hat)
+                X_colored = color_transfer.color_transfer(style_l, X_hat)
+                X = denoise.denoise(X_colored)
+                cv2.imwrite("results/output_L%i_p%i_i%i.jpg % (l, patch_size, i)", X)
         if l + 1 < PYR_SIZE:
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
             # add noise for next layer, update this std dev
-            X = X + np.random.normal(scale=noise_dev, size=X.shape) #updat std dev?
+            X = X + np.random.normal(scale=noise_dev, size=X.shape)
     return X
 
 if __name__ == "__main__":
@@ -97,7 +94,7 @@ if __name__ == "__main__":
     weight[weight_raw > 0] = 1
     # weight = None
     X = style_transfer(style, content, weight)
-    cv2.imwrite("style_transfer_output_full_boy.png", X)
+    cv2.imwrite("results/style_transfer_output_full_boy.png", X)
     print("ended", datetime.datetime.now())
 
 

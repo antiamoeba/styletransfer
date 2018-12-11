@@ -14,7 +14,7 @@ class PatchMatcher:
         self.S = S
         self.patch_size = patch_size
         self.S_patches = []
-        self.xw, self.yw = np.meshgrid(np.arange(self.patch_size), np.arange(self.patch_size))
+        self.yw, self.xw = np.meshgrid(np.arange(self.patch_size), np.arange(self.patch_size), indexing="ij")
         self.yw = self.yw.flatten()
         self.xw = self.xw.flatten()
         self.matcher = None 
