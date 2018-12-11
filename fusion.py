@@ -14,11 +14,11 @@ def content_fusion(x_tilde, content_img, weights=None):
     else:
         weights = weights.flatten()
 
-    weights += 1
+    print(weights.max())
     
     weight_matrix = sparse.diags(weights, 0)
 
-    left_side = sparse.diags(1/weights, 0)
+    left_side = sparse.diags(1/(1 + weights), 0)
     right_side = x_tilde.flatten() + weight_matrix * content_img.flatten()
 
     x_hat = left_side * right_side

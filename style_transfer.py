@@ -77,15 +77,18 @@ def style_transfer(style, content, weight=None):
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
             # add noise for next layer, update this std dev
-            X = X + np.random.normal(scale=30, size=X.shape) #updat std dev?
+            X = X + np.random.normal(scale=50, size=X.shape) #updat std dev?
     return X
 
 if __name__ == "__main__":
     import datetime
     print("started", datetime.datetime.now())
-    style = cv2.imread("images/starry_med.jpg")
-    content = cv2.imread("images/cat_med.jpg")
-    X = style_transfer(style, content)
+    style = cv2.imread("images/starry_small.jpg")
+    content = cv2.imread("images/cat_small.jpg")
+    weight_raw = cv2.imread("images/cat_small_mask_head.jpg")
+    weight = np.zeros(content.shape)
+    weight[weight_raw > 0] = 1
+    X = style_transfer(style, content, weight)
     cv2.imwrite("style_transfer_output_full_boy.png", X)
     print("ended", datetime.datetime.now())
 
