@@ -73,9 +73,13 @@ if __name__ == "__main__":
     import skimage.io as skio
     import robust
     import cv2
-    img = cv2.imread("images/starry_tiny.jpg")
-    img2 = cv2.imread("images/starry_tiny.jpg")
-    matcher = PatchMatcher(img, 60)
-    coords, images = matcher.find_nearest_neighbors(img, 55)
-    test = robust.less_robust_agg(coords, images, img, 60)
+    import datetime
+    img = cv2.imread("images/style/starry_small.jpg")
+    img2 = cv2.imread("images/content/cat_med.jpg")
+    print("start", datetime.datetime.now())
+    matcher = PatchMatcher(img, 33)
+    print("done constructing", datetime.datetime.now())
+    coords, images = matcher.find_nearest_neighbors(img, 28)
+    print("done matching", datetime.datetime.now())
+    test = robust.less_robust_agg(coords, images, img, 33)
     cv2.imwrite("patch_match_test.png", test)

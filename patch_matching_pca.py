@@ -67,7 +67,7 @@ class PatchMatcher:
         X_patches = np.array(X_patches).reshape(len(X_patches), -1)
 
         X_patches = X_patches - X_patches.mean(axis=1, keepdims=True)
-        transformed_X = pca.transform(X_patches)
+        transformed_X = self.pca.transform(X_patches)
         distances, indices = self.matcher.kneighbors(transformed_X)
 
         matches = self.S_patches[indices].reshape(X_patches.shape[0], self.patch_size, self.patch_size, 3)
@@ -78,9 +78,13 @@ if __name__ == "__main__":
     import skimage.io as skio
     import robust
     import cv2
+    import datetime
     img = cv2.imread("images/style/starry_tiny.jpg")
     img2 = cv2.imread("images/style/starry_tiny.jpg")
-    matcher = PatchMatcher(img, 35)
-    coords, images = matcher.find_nearest_neighbors(img, 30)
-    test = robust.less_robust_agg(coords, images, img, 35)
+    print("start", datetime.datetime.now())
+    matcher = PatchMatcher(img, 33)
+    print("done constructing", datetime.datetime.now())
+    coords, images = matcher.find_nearest_neighbors(img, 28)
+    print("done matching", datetime.datetime.now())
+    test = robust.less_robust_agg(coords, images, img, 33)
     cv2.imwrite("patch_match_test.png", test)
