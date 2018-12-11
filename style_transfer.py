@@ -24,7 +24,7 @@ Input: Style image (3-D), content image (3-D), optional
 weight image (2-D, same size as content image).
 Output: Content image transformed to have the style of the style image
 """
-def style_transfer(style, content, weight=None):
+def style_transfer(style, content, weight=None, fusion=True):
     if weight is None:
         weight = np.ones(content.shape)
 
@@ -71,8 +71,11 @@ def style_transfer(style, content, weight=None):
                 neighborhoods, matches = patch_matcher.find_nearest_neighbors(X + np.random.normal(scale=noise_dev/4, size=X.shape), sample_gap)
                 X_tilde = robust.less_robust_agg(neighborhoods, matches, X, patch_size)
                 cv2.imwrite("results/robust_L%i_p%i_i%i.jpg" % (l, patch_size, i), X_tilde)
-                X_hat = fusion.content_fusion(X_tilde, content_l, weight_l)
-                cv2.imwrite("results/fusion_L%i_p%i_i%i.jpg" % (l, patch_size, i), X_hat)
+                if not fusion:
+                    X_hat = X_tilde
+                else:
+                    X_hat = fusion.content_fusion(X_tilde, content_l, weight_l)
+                    cv2.imwrite("results/fusion_L%i_p%i_i%i.jpg" % (l, patch_size, i), X_hat)
                 X_colored = color_transfer.color_transfer(style_l, X_hat)
                 X = denoise.denoise(X_colored)
                 cv2.imwrite("results/output_L%i_p%i_i%i.jpg" % (l, patch_size, i), X)
