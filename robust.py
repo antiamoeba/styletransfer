@@ -20,7 +20,7 @@ def naive_agg(centers, patches, X, patch_size):
     x_tilde = X.copy()
     for i in range(len(centers)):
         center = centers[i]
-        x_tilde[center[0]: center[0]+patch_size, center[1]: center[1]+patch_size] = patches[i]
+        x_tilde[center[0]: center[0]+patch_size, center[1]: center[1]+patch_size] = patches[i].copy()
 
     return x_tilde
 

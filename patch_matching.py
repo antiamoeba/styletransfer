@@ -14,7 +14,7 @@ class PatchMatcher:
         self.S = S
         self.patch_size = patch_size
         self.S_patches = []
-        self.yw, self.xw = np.meshgrid(np.arange(self.patch_size), np.arange(self.patch_size))
+        self.xw, self.yw = np.meshgrid(np.arange(self.patch_size), np.arange(self.patch_size))
         self.yw = self.yw.flatten()
         self.xw = self.xw.flatten()
         self.matcher = None 
@@ -56,19 +56,26 @@ class PatchMatcher:
     """
     def find_nearest_neighbors(self, X, sample_gap):
         neighb_ys, neighb_xs = self.get_neighborhoods(X, sample_gap)
+        # X_patches = []
+        # for y, x in zip(neighb_ys, neighb_xs):
+        #     X_patches.append(X[y:y+self.patch_size,x:x+self.patch_size].flatten())
+        # X_patches = np.array(X_patches)
         X_patches = X[neighb_ys[:, None] + self.yw, neighb_xs[:, None] + self.xw, :]
         X_patches = np.array(X_patches).reshape(len(X_patches), -1)
+ 
         distances, indices = self.matcher.kneighbors(X_patches)
+
         matches = self.S_patches[indices].reshape(X_patches.shape[0], self.patch_size, self.patch_size, 3)
         neighborhoods = np.array([neighb_ys, neighb_xs])
         return neighborhoods, matches
 
 if __name__ == "__main__":
     import skimage.io as skio
-    img = skio.imread("images/starry_tiny.jpg")
-    img2 = skio.imread("images/cat_small.jpg")
-    matcher = PatchMatcher(img, 30)
-    coords, images = matcher.find_nearest_neighbors(img2, 27)
-    for i in range(3):
-        skio.imshow(images[i])
-        skio.show()
+    import robust
+    import cv2
+    img = cv2.imread("images/starry_tiny.jpg")
+    img2 = cv2.imread("images/starry_tiny.jpg")
+    matcher = PatchMatcher(img, 60)
+    coords, images = matcher.find_nearest_neighbors(img, 55)
+    test = robust.naive_agg(coords, images, img, 60)
+    cv2.imwrite("patch_match_test.png", test)

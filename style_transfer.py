@@ -35,6 +35,8 @@ def style_transfer(style, content, weight=None):
     c_pyr = color_transfer.color_transfer(s_pyr, c_pyr)
     w_pyr = weight.copy()
 
+    noise_dev = np.std(c_pyr) * 2
+
     style_pyr = [s_pyr]
     content_pyr = [c_pyr]
     weight_pyr = [w_pyr]
@@ -50,7 +52,10 @@ def style_transfer(style, content, weight=None):
 
     content_pyr, style_pyr, weight_pyr = content_pyr[::-1], style_pyr[::-1], weight_pyr[::-1]
 
-    X = content_pyr[0] + np.random.normal(scale=50, size=content_pyr[0].shape)
+    min_size = min(content_pyr[0].shape[0], content_pyr[0].shape[1])
+    kernel_size = int(min_size * 0.5)
+    blur_dev = int(min_size * 0.25)
+    X = cv2.GaussianBlur(content_pyr[0],(kernel_size, kernel_size), blur_dev) + np.random.normal(scale=noise_dev, size=content_pyr[0].shape)
     # Loop over every size
     for l in range(0, PYR_SIZE):
         style_l = style_pyr[l]
@@ -64,7 +69,7 @@ def style_transfer(style, content, weight=None):
             cv2.imwrite("results/init" + str(l) + str(patch_size) + ".jpg", X)
             for i in range(OPT_ITERATIONS):
                 print("pyramid level:", l, "patch size:", patch_size, "iteration", i)
-                neighborhoods, matches = patch_matcher.find_nearest_neighbors(X, sample_gap)
+                neighborhoods, matches = patch_matcher.find_nearest_neighbors(X + np.random.normal(scale=noise_dev/4, size=X.shape), sample_gap)
                 #cv2.imwrite("results/matches.jpg", np.vstack(matches[:10]))
                 X_tilde = robust.naive_agg(neighborhoods, matches, X, patch_size)
                 cv2.imwrite("results/robust" + str(l) + str(patch_size) + ".jpg", X_tilde)
@@ -79,7 +84,7 @@ def style_transfer(style, content, weight=None):
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
             # add noise for next layer, update this std dev
-            X = X + np.random.normal(scale=50, size=X.shape) #updat std dev?
+            X = X + np.random.normal(scale=noise_dev, size=X.shape) #updat std dev?
     return X
 
 if __name__ == "__main__":
