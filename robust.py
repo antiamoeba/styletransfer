@@ -7,7 +7,24 @@ import pdb
 R = 0.8 # for robust aggregation (avoid least squares)
 ITERATIONS = 10 #IRLS iterations
 
+def naive_agg(centers, patches, X, patch_size):
+    centers = centers.T
+    # calculate weights
+    num_rows = X.shape[0] 
+    num_cols = X.shape[1]
+    total_px = num_rows * num_cols * 3
 
+    def get_index(y, x, k):
+        return (y * num_cols + x) * 3 + k
+
+    x_tilde = X.copy()
+    for i in range(len(centers)):
+        center = centers[i]
+        x_tilde[center[0]: center[0]+patch_size, center[1]: center[1]+patch_size] = patches[i]
+
+    return x_tilde
+
+    
 def robust_agg(centers, patches, X, patch_size):
     centers = centers.T
     # calculate weights
