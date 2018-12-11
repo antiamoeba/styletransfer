@@ -76,7 +76,7 @@ def style_transfer(style, content, weight=None):
                 cv2.imwrite("results/fusion_L%i_p%i_i%i.jpg" % (l, patch_size, i), X_hat)
                 X_colored = color_transfer.color_transfer(style_l, X_hat)
                 X = denoise.denoise(X_colored)
-                cv2.imwrite("results/output_L%i_p%i_i%i.jpg % (l, patch_size, i)", X)
+                cv2.imwrite("results/output_L%i_p%i_i%i.jpg" % (l, patch_size, i), X)
         if l + 1 < PYR_SIZE:
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
 
