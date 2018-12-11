@@ -14,14 +14,10 @@ def content_fusion(x_tilde, content_img, weights=None):
     else:
         weights = weights.flatten()
 
-    print(weights.max())
-    
-    weight_matrix = sparse.diags(weights, 0)
+    left_side = 1/(1 + weights)
+    right_side = x_tilde.flatten() + np.multiply(weights, content_img.flatten())
 
-    left_side = sparse.diags(1/(1 + weights), 0)
-    right_side = x_tilde.flatten() + weight_matrix * content_img.flatten()
-
-    x_hat = left_side * right_side
+    x_hat = np.multiply(left_side, right_side)
 
     return np.reshape(x_hat, (x_tilde.shape[0], x_tilde.shape[1], 3))
 

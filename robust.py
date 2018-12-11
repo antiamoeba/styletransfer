@@ -8,17 +8,17 @@ R = 0.8 # for robust aggregation (avoid least squares)
 ITERATIONS = 10 #IRLS iterations
 
 
-def robust_agg(centers, patches, x, patch_size):
+def robust_agg(centers, patches, X, patch_size):
     centers = centers.T
     # calculate weights
-    num_rows = x.shape[0] 
-    num_cols = x.shape[1]
+    num_rows = X.shape[0] 
+    num_cols = X.shape[1]
     total_px = num_rows * num_cols * 3
 
     def get_index(y, x, k):
         return (y * num_cols + x) * 3 + k
 
-    x_tilde = x
+    x_tilde = X
     for iteration in range(ITERATIONS):
         rows = []
         cols = []
