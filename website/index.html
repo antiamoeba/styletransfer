@@ -1,0 +1,208 @@
+<html>
+<head>
+    <title>Style Transfer and Artistic Generation Via Texture Synthesis</title>
+    <link href="https://fonts.googleapis.com/css?family=Merriweather" rel="stylesheet"> 
+    <style>
+        body {
+            width: 70%;
+            margin: 0 auto;
+            font-family: 'Merriweather', serif;
+        }
+        figure {
+            width: 90%;
+            margin: 0 auto;
+        }
+        figure > img {
+            width: 33%;
+        }
+        .center {
+            text-align: center;
+        }
+
+        figure.solo {
+            width: 400px;
+        }
+        figure.solo > img {
+            width: 90%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+<h1 class="center">Style Transfer and Artistic Generation Via Texture Synthesis</h1>
+<h2 class="center">By Dorian Yao Chan (aec) and Michelle Hwang (aaj)</h2>
+
+<figure>
+    <img src="images/wave_med.jpg" />
+    <img src="images/starry_400.jpg" />
+    <img src="images/starry_wave_robust.jpg" />
+</figure>
+
+<h2 class="center"><a href="#results">Go to our results</a></h2>
+<h2 class="center"><a href="https://github.com/antiamoeba/styletransfer">Github</a></h2>
+
+<h2>Abstract</h2>
+<p>While recent work in the style transfer community has focused on using neural network based strategies, 
+we turn back to classic texture synthesis algorithms to perform style transfer, 
+mainly based off the work of Elad and Manifar[1]. We propose a series of modifications that allow for more artistic style 
+transfer to represent the desired content. We also extend the algorithm to synthesize paintings from untrained user drawings 
+based off a given style.</p>
+
+<h2>1: Introduction</h2>
+<p>In recent years, using machine learning to perform style transfer has been a hit in the computer science community, 
+mainly focused around using convolutional neural networks that require significant training time and often lack 
+capabilities for reuse on new styles. For our work, we decided to take a more straightforward approach, based off 
+the large body of texture synthesis work. Our texture synthesis approach allows us to directly tailor the algorithm 
+to better transfer artistic styles to content images, and takes in arbitrary style and content images for maximum 
+applicability.</p>
+
+<h2>2: Proposed Method</h2>
+<p>OOur method of style transfer is based on Elad and Manifar[1]'s previous work which is an extension of texture synthesis while injecting priors about a content image. We take in as inputs a content image and a style image, and our goal is to create a stylized content image (which we will refer to as a "guess") based on the color and structure of the content image with the style of the style image. We do this iteratively, by initializing our guess image as a color-transformed version of the content image, then obtaining patches from our style image that closely match our content image, aggregating these patches together, blending the content image with the aggregated patches, color transferring from our style image to the guess, and then denoising the guess. We do this process repeatedly over multiple pyramid levels and patch sizes to obtain a finalized result. This will result in a guess image that approximately minimizes the L2 distance between each patch in the guess image and a patch in the style image and the L2 distance between between the guess image and the content image.</p>
+
+<h3>2.1: Nearest Neighbors</h3>
+<p>First, we begin each iteration of our algorithm by finding fixed size patches from the style image that most closely match patches of the same size of our guess image. We iterate through our entire guess image with a fixed stride length and extract a patch at that neighborhood. We then find the patch in the style image that most closely matches the guess image path (with the minimum L2 distance). </p>
+
+<p>Elad and Manifar[1] suggested using PCA decomposition on the zero-meaned patches to pre-process them and compress them for faster matching (while still using the original patches after matching). This did give us a 3x speedup, but we found the results of this to be unsatisfactory. Zero-meaning the patches caused patches of incorrect colors to be matched to the guess image patches. Just using PCA without zero-meaning caused us to lose some detail that made matches inferior, as shown in the figure below. Instead, we did not pre-process the patches with any transformations and used a simple match based on minimizing L2 distance.</p>
+
+<figure class="solo">
+<img src="images/starry_pca.png" />
+<figcaption>A nearest neighbor matching failure case on a cat styled with <i>The Starry Night</i>. Notice the discontinuity and lack of structure.</figcaption>
+</figure>
+
+<h3>2.2: Aggregation</h3>
+<p>After we find nearest neighbors for every patch, we now need to assign every pixel in our guess image some pixel value derived from the patches. During setup, we intentionally allowed for patch overlap in order to allow smoother boundaries between patches. Thus, some pixels in the guess image will be associated with multiple patches, and will need to be given a value based on all of the overlapping patches. Kwatra et. al.[2] found a need to use robust aggregation techniques for pixel assignment, in order to perform outlier rejection. Namely, they attempt to minimize the sum of the differences between the assigned color value and patch color values to the power of <i>r = 0.8</i>. Thus, outlier assignments are weighted less than normal.</p>
+
+<p>In our experiments, we found that robust aggregation was not optimal for artistic style transfer. The outliers are essential for abrupt changes that might lie in some style - we found that robust aggregation often lead to blurred out images that didn't capture the unique features of the style image, as shown below. Instead, we used <i>r = 2</i>, which simply devolves into taking an image between all pixel guesses. We get much better, more distinct results that we will display later.</p>
+
+<figure class="solo">
+<img src="images/robust.png" />
+<figcaption>A robust aggregation failure case on a cat styled with <i>The Starry Night</i>. Notice the blurred out stars and clouds.</figcaption>
+</figure>
+
+<h3>2.3: Content Fusion</h3>
+<p>In Elad and Manifar[1], there is an additional content fusion step in order to try and minimize the difference between the content image and the output guess image. They simply take a weighted average between these two images for the minimization, based on some given segmentation mask/weight matrix. Their parameters often resulted in very heavy emphasis on the content image, which results in an output image with very jarring photorealistic elements that overpower artistic style. In order to solve this problem, we take a much more conservative approach, where we minimally weight the content image in order to guide the guess image towards an overall structure that resembles the content image. Our results are much more aesthetically pleasing, more accurately matching the style image. For our results, we also sometimes skip content fusion on the highest resolution at the last iteration, in order to preserve artistic style.</p>
+
+<h3>2.4: Color Transfer</h3>
+<p>Elad and Manifar[1] suggest color-transferring the style image's color to the guess image, which we do with histogram matching which leads to visually pleasing results. We perform a color transfer at the very beginning on our initialized guess image, and then every time after content fusion. Thus, our algorithm can handle pairs of content and style images with different color palettes.</p>
+
+<h3>2.5: Denoising</h3>
+Even after aggregation, thanks to the patch-level quilting we may get visible edges where borders overlap. In order to mitigate this problem, we apply denoising algorithms that help ensure that the image is spatially smooth. We use an approximation of the bilateral filter provided by OpenCV called <i>edgePreservingFilter</i>. Elad and Manifar[1] use the similar domain transform filter.
+
+<h3>2.6: Final Process</h3>
+<p>We used the values:</p>
+<img height="100" src="images/params.png" />
+
+<p>Input images were approximately 400px x 400px, maintaining their original aspect ratio.</p>
+
+<p>The pseudocode for our algorithm is as follows:</p>
+<img height="700" src="images/pseudocode.png" />
+
+<p>While we originally returned the full sized X image in the end, we saw that X' would contain better results due to the fusion step typically blending in too much of the content image's features that overshadowed artistic effects. </p>
+
+<h2 id="results">3: Results</h2>
+<h3>3.1: Style (Art) Images Transferred onto Photos</h3>
+<p>Content images appear first, style images second, and final product third.</p>
+<figure>
+    <img src="images/cat_med.jpg" />
+    <img src="images/starry_400.jpg" />
+    <img src="images/cat_robust.jpg" />
+</figure>
+
+<figure>
+    <img src="images/chick_med.jpg" />
+    <img src="images/seurat_med.png" />
+    <img src="images/chick_robust.jpg" />
+</figure>
+
+<figure>
+    <img src="images/michelle.jpg" />
+    <img src="images/guernica.jpg" />
+    <img src="images/michelle_robust.jpg" />
+</figure>
+
+<figure>
+    <img src="images/forest_med.jpg" />
+    <img src="images/pollock_med.jpg" />
+    <img src="images/forest_robust.jpg" />
+</figure>
+
+<figure>
+    <img src="images/bridge_med.jpg" />
+    <img src="images/waterlily_pond_art_med.jpg" />
+    <img src="images/bridge.png" />
+    <figcaption>Note that for this above output we do not skip fusion, color transfer, and denoising in the last iteration.</figcaption>
+</figure>
+
+<h3>3.2: Style (Art) Images Transferred onto Style (Art)</h3>
+<p>We also tried transferring the style of one painting onto another. As in the previous section, content images appear on the upper left, style images on the upper right, and final product on the bottom.</p>
+
+<figure>
+    <img src="images/wave_med.jpg" />
+    <img src="images/starry_400.jpg" />
+    <img src="images/starry_wave_robust.jpg" />
+</figure>
+
+<figure>
+    <img src="images/waterlily_pond_art_med.jpg" />
+    <img src="images/seurat_med.png" />
+    <img src="images/pond_seurat.png" />
+</figure>
+
+
+
+<h3>3.3: Failure Cases</h3>
+Lastly, we have a few failure cases. For example, this figure below is hard to recognize as being similar to the original content image, likely due to the content image and style image both having too much detail.
+
+<figure>
+    <img src="images/tahoe_med.jpg" />
+    <img src="images/sunday_afternoon_small.png" />
+    <img src="images/tahoe_robust.jpg" />
+</figure>
+
+In this figure, we have subpar results due to the style image not having enough details that would be recognizable when transferred to the content image.
+
+<figure>
+    <img src="images/michelle.jpg" />
+    <img src="images/botero.jpg" />
+    <img src="images/michelle_botero_robust.jpg" />
+</figure>
+
+<h2>4: Artistic Generation</h2>
+
+<p>As an extension of our algorithm, we applied it with some modifications to generating paintings from a given painting style image and a user supplied attempt. We use this attempt to effectively guide the algorithm, but at the same time avoid too much input. Thus, we use an even smaller weight during content fusion in order to minimize the impact of the user supplied attempt, which is most likely much poorer quality than the desired style. We also avoid color transfer in order to ensure that colors in the user's drawing roughly match up with the output image. Finally, we output only the final aggregated image, to again ensure that the user attempt does not yield incorrect colors. We see examples below, with excellent results.</p>
+
+<figure>
+    <img src="images/starry_draw.png" />
+    <img src="images/starry_400.jpg" />
+    <img src="images/starry_postdraw.jpg" />
+    <figcaption>Demonstration of artistic generation with <i>The Starry Night</i>. On the left is the hand drawn attempt of a nightscape, on the right is the original style painting, and the bottom is the artistically generated blend using our modified algorithm.</figcaption>
+</figure>
+
+<figure>
+    <img src="images/waves_draw.jpg" />
+    <img src="images/wave_med.jpg" />
+    <img src="images/waves_postdraw.png" />
+    <figcaption>Demonstration of artistic generation with <i>The Great Wave off Kanagawa</i>. On the left is the hand drawn attempt of an ocean, on the right is the original style painting, and the bottom is the artistically generated blend using our modified algorithm.</figcaption>
+</figure>
+
+<h2>5: Conclusion</h2>
+<p>As our above work as shown, a texture-synthesis approach to style transfer is certainly feasible for high quality results. Additionally, with only easy modifications our algorithm also handles artistic generation utilizing very simple user drawings. Many improvements are certainly still possible:</p>
+<ul>
+    <li>Our algorithm assumes that the content and style image are roughly at the same scale. Being able to dynamically handle differences would significantly boost the ease of use.</li>
+    <li>Some parameters, like noise and content fusion weighting, depend heavily on the exact style and content images. Automatically tuning these parameters would reduce the amount of mandatory user input.</li>
+    <li>Aggregation could significantly be improved. Currently, pixels take the average value of all neighborhoods that contain it, resulting in often disjointed segments. Better pixel assignments that smooth out these overlaps and boundaries, perhaps using a gradient-based approach, would reduce the amount of iterations needed to develop a smooth output image.</li>
+    <li>Content fusion could also significantly be improved. As described before, existing work simply takes the average between the guess and the content image, resulting in color changes and bias that reduce the effect of the style transfer. A better approach would, like aggregation, use a gradient-based approach to preserve only the important features of the content image.</li>
+</ul>
+
+<p>
+REFERENCES
+<br>
+[1] Michael Elad and Peyman Milanfar. 2017. Style Transfer Via Texture Synthesis. Trans. Img. Proc. 26, 5 (May 2017), 2338–2351. https://doi.org/10.1109/TIP.2017. 2678168
+<br>
+[2] Vivek Kwatra, Irfan Essa, Aaron Bobick, and Nipun Kwatra. 2005. Texture Opti- mization for Example-based Synthesis. ACM Transactions on Graphics, SIGGRAPH 2005 (August 2005).
+</p>
+
+</body>
+</html>
