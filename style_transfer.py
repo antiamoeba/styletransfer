@@ -9,7 +9,7 @@ import patch_matching
 import denoise
 import color_transfer
 
-PYR_SIZE = 3
+PYR_SIZE = 2
 OPT_ITERATIONS = 3
 PATCH_SIZES = [33, 21, 13, 9]
 SUB_SAMPLING_GAPS = [28, 18, 8, 5]
@@ -34,7 +34,7 @@ def style_transfer(style, content, weight=None):
     c_pyr = color_transfer.color_transfer(s_pyr, c_pyr)
     w_pyr = weight.copy()
 
-    noise_dev = np.std(c_pyr) * 2
+    noise_dev = np.std(c_pyr) * 4
 
     style_pyr = [s_pyr]
     content_pyr = [c_pyr]
@@ -86,14 +86,15 @@ def style_transfer(style, content, weight=None):
 if __name__ == "__main__":
     import datetime
     print("started", datetime.datetime.now())
-    style = cv2.imread("images/starry_small.jpg")
-    content = cv2.imread("images/cat_small.jpg")
-    weight_raw = cv2.imread("images/cat_small_mask.png")
+    style = cv2.imread("images/style/sunday_afternoon_small.png")
+    content = cv2.imread("images/content/tahoe_med.jpg")
+    weight_raw = cv2.imread("images/content/tahoe_mask.jpg")
     weight = np.zeros(content.shape)
     weight[weight_raw > 0] = 0.5
+    weight[weight_raw <= 0] = 0
     # weight = None
     X = style_transfer(style, content, weight)
-    cv2.imwrite("results/style_transfer_output_full_boy.png", X)
+    cv2.imwrite("results/style_transfer_output_full_tahoe.png", X)
     print("ended", datetime.datetime.now())
 
 
