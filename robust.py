@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 from scipy.sparse import csr_matrix
 from scipy.sparse import linalg
-import pdb
 
 R = 0.8 # for robust aggregation (avoid least squares)
 ITERATIONS = 10 #IRLS iterations
@@ -106,7 +105,8 @@ def robust_agg(centers, patches, X, patch_size):
         output_data = output[0]
         x_tilde = np.reshape(output_data, (num_rows, num_cols, 3))
     return x_tilde
-    
+
+# Testing
 if __name__ == "__main__":
     img = np.random.rand(20, 30, 3)
     centers = np.array([[0, 0, 0, 10, 10, 10],
