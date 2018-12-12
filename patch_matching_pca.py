@@ -3,11 +3,9 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.feature_extraction import image
 import numpy as np
 from sklearn.decomposition import PCA
-import pdb
 
 class PatchMatcher:
 
-    # TODO: Make it so we don't actually have to save all the patches, like use indices instead?
     """
     S is the style image and patch_size is the length and width of the patch
     """
@@ -22,8 +20,6 @@ class PatchMatcher:
         self.pca = None
         self.construct_matcher()
 
-    # TODO: Do we need to change the default heuristic of how to
-    # determine how patches are close?
     """
     Creates [patch images] and NearestNeighbors object for all patches in S
     """
@@ -52,7 +48,6 @@ class PatchMatcher:
         ys, xs = ys.astype(int).flatten(), xs.astype(int).flatten()
         return ys, xs
     
-    # TODO: Add option to use other neighborhoods
     """
     Input: Guess image X, subsampling gap
     subsampling gap should be <= patch size
@@ -65,14 +60,13 @@ class PatchMatcher:
         neighb_ys, neighb_xs = self.get_neighborhoods(X, sample_gap)
         X_patches = X[neighb_ys[:, None] + self.yw, neighb_xs[:, None] + self.xw, :]
         X_patches = np.array(X_patches).reshape(len(X_patches), -1)
-
         transformed_X = self.pca.transform(X_patches)
         distances, indices = self.matcher.kneighbors(transformed_X)
-
         matches = self.S_patches[indices].reshape(X_patches.shape[0], self.patch_size, self.patch_size, 3)
         neighborhoods = np.array([neighb_ys, neighb_xs])
         return neighborhoods, matches
 
+# Testing
 if __name__ == "__main__":
     import skimage.io as skio
     import robust

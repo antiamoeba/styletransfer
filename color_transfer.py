@@ -3,8 +3,6 @@ import cv2
 import skimage.io as skio
 import skimage as sk
 
-# TODO: Make more efficient so we don't have to compute
-# the histogram each time
 """
 Input: Style image S, Guess Image X
 
@@ -30,7 +28,7 @@ def color_transfer(S3, X3):
         output_channels.append(interp_S_values[bin_idx].reshape(old_shape))
     return cv2.merge(output_channels)
 
-
+# Testing
 if __name__ == "__main__":
     img1 = sk.img_as_float(skio.imread("images/starry_med.jpg"))
     img2 = sk.img_as_float(skio.imread("images/cat_med.jpg"))

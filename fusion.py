@@ -21,7 +21,7 @@ def content_fusion(x_tilde, content_img, weights=None):
 
     return np.reshape(x_hat, (x_tilde.shape[0], x_tilde.shape[1], 3))
 
-
+# Testing
 if __name__ == "__main__":
     img1 = cv2.imread("images/cow.jpg")
     img2 = cv2.imread("images/mars.jpg")
