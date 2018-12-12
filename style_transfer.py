@@ -25,8 +25,9 @@ weight image (2-D, same size as content image).
 Output: Content image transformed to have the style of the style image
 """
 def style_transfer(style, content, weight_value, weight_raw=None, fuse=True):
+    weight = None
     if weight_raw is None:
-        weight = np.ones(content.shape)
+        weight = np.ones(content.shape) * weight_value
     else:
         weight = np.zeros(content.shape)
         weight[weight_raw > 0] = weight_value
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     style = cv2.imread("images/style/starry_small.jpg")
     content = cv2.imread("images/content/cat_small.jpg")
     weight_raw = cv2.imread("images/content/cat_small_mask.png")
-    X = style_transfer(style, content, .5, weight_raw=weight_raw)
+    X = style_transfer(style, content, .1, weight_raw=weight_raw)
     cv2.imwrite("results/style_transfer_output_full_cat.png", X)
     print("ended", datetime.datetime.now())
 
