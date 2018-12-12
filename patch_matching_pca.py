@@ -31,7 +31,7 @@ class PatchMatcher:
         patches = image.extract_patches_2d(self.S, (self.patch_size, self.patch_size))
         self.S_patches = patches
         flattened = np.reshape(patches, (patches.shape[0], -1))
-        normalized = flattened - flattened.mean(axis=1, keepdims=True)
+        normalized = flattened
         pca = PCA(n_components = .95, svd_solver="full")
         fitted = pca.fit_transform(normalized)
         self.pca = pca
@@ -66,7 +66,6 @@ class PatchMatcher:
         X_patches = X[neighb_ys[:, None] + self.yw, neighb_xs[:, None] + self.xw, :]
         X_patches = np.array(X_patches).reshape(len(X_patches), -1)
 
-        X_patches = X_patches - X_patches.mean(axis=1, keepdims=True)
         transformed_X = self.pca.transform(X_patches)
         distances, indices = self.matcher.kneighbors(transformed_X)
 
