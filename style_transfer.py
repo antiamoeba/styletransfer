@@ -94,8 +94,8 @@ if __name__ == "__main__":
     style = cv2.imread("images/style/starry_small.jpg")
     content = cv2.imread("images/content/cat_small.jpg")
     weight_raw = cv2.imread("images/content/cat_small_mask.png")
-    X = style_transfer(style, content, .5, weight_img=weight_raw)
-    cv2.imwrite("results/style_transfer_output_full_boy.png", X)
+    X = style_transfer(style, content, .5, weight_raw=weight_raw)
+    cv2.imwrite("results/style_transfer_output_full_cat.png", X)
     print("ended", datetime.datetime.now())
 
 
