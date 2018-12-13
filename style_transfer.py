@@ -71,7 +71,7 @@ def style_transfer(style, content, weight_value, weight_raw=None, init_color=Tru
                 X_hat = fusion.content_fusion(X_tilde, content_l, weight_l)
                 cv2.imwrite("results/fusion_L%i_p%i_i%i.jpg" % (l, patch_size, i), X_hat)
                 X_colored = color_transfer.color_transfer(style_l, X_hat)
-                X = denoise.denoise(X_colored)
+                X = X_colored #denoise.denoise(X_colored)
                 cv2.imwrite("results/output_L%i_p%i_i%i.jpg" % (l, patch_size, i), X)
         if l + 1 < PYR_SIZE:
             X = cv2.resize(X, (content_pyr[l+1].shape[1], content_pyr[l+1].shape[0]))
@@ -82,11 +82,11 @@ def style_transfer(style, content, weight_value, weight_raw=None, init_color=Tru
 if __name__ == "__main__":
     import datetime
     print("started", datetime.datetime.now())
-    style = cv2.imread("images/style/starry_small.jpg")
-    content = cv2.imread("images/content/cat_small.jpg")
-    weight_raw = cv2.imread("images/content/cat_small_mask.png")
-    X = style_transfer(style, content, .3, weight_raw=weight_raw)
-    cv2.imwrite("results/starry_cat.jpg", X)
+    content = cv2.imread("images/content/bear.jpg")
+    style = cv2.imread("images/style/women.jpg")
+    weight_raw = None #cv2.imread("images/content/cat_small_mask.png")
+    X = style_transfer(style, content, .3, weight_raw=weight_raw, init_color=True)
+    cv2.imwrite("results/style_transfer_output_full_bear.png", X)
     print("ended", datetime.datetime.now())
 
 
